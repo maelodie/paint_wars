@@ -14,6 +14,7 @@ import paintwars_arena
 # =-=-=-=-=-=-=-=-=-= NE RIEN MODIFIER *AVANT* CETTE LIGNE =-=-=-=-=-=-=-=-=-=
 
 from braitenberg import *
+from layers import *
 def get_extended_sensors(sensors):
     for key in sensors:
         sensors[key]["distance_to_robot"] = 1.0
@@ -23,6 +24,18 @@ def get_extended_sensors(sensors):
         else:
             sensors[key]["distance_to_wall"] = sensors[key]["distance"]
     return sensors
+
+# Construction de la bibliothèque de gestion des comportements en subsomption
+
+behavior_lib = Subsomption() # Bibliothèque de comportements
+avancer = Avancer() # Comportement avancer tout droit
+hateWall = HateWall() # Comportement HateWall
+loveBot = LoveBot() # Comportement lovebot
+
+# Ajout de chaque comportement à la librairie
+behavior_lib.addLayer(loveBot)
+behavior_lib.addLayer(hateWall)
+behavior_lib.addLayer(avancer)
 
 def step(robotId, sensors): # <<<<<<<<<------- fonction à modifier pour le TP1
 
@@ -52,21 +65,18 @@ def step(robotId, sensors): # <<<<<<<<<------- fonction à modifier pour le TP1
     #   sensors["sensor_front_left"]["distance_to_robot"]
     #   sensors["sensor_front_right"]["distance_to_wall"]
     #   sensors["sensor_front_right"]["distance_to_robot"]
-    parametre_sensor = 0.6
-    translation = sensors["sensor_front"]["distance"]
-    if sensors["sensor_left"]["distance_to_robot"] < parametre_sensor or sensors["sensor_right"]["distance_to_robot"] < parametre_sensor or sensors["sensor_front"]["distance_to_robot"] < parametre_sensor:
-        translation, rotation = braitenberg_loveBot(sensors)
-        print("je suis un robot")
-    elif sensors["sensor_left"]["distance_to_wall"] < parametre_sensor or sensors["sensor_right"]["distance_to_wall"] < parametre_sensor or sensors["sensor_front"]["distance_to_wall"] < parametre_sensor:
-        translation, rotation = braitenberg_hateWall(sensors)
-        print("je cogne un mur")
-    else:
-        rotation = 0
-        print("je vais tout droit")
 
+    
+    parametre_sensor = 0.6 # sensibilité des senseurs
+    behavior_lib.activate(sensors, parametre_sensor)
+    translation, rotation = behavior_lib.get_attributes()
+    if translation is None or rotation is None:
+        translation, rotation = 0, 0
+    
     # limite les valeurs de sortie entre -1 et +1
     translation = max(-1,min(translation,1))
     rotation = max(-1, min(rotation, 1))
+    
 
     return translation, rotation
 

@@ -14,6 +14,7 @@ import paintwars_arena
 # =-=-=-=-=-=-=-=-=-= NE RIEN MODIFIER *AVANT* CETTE LIGNE =-=-=-=-=-=-=-=-=-=
 
 from braitenberg import *
+
 def get_extended_sensors(sensors):
     for key in sensors:
         sensors[key]["distance_to_robot"] = 1.0
@@ -53,7 +54,7 @@ def step(robotId, sensors): # <<<<<<<<<------- fonction à modifier pour le TP1
     #   sensors["sensor_front_right"]["distance_to_wall"]
     #   sensors["sensor_front_right"]["distance_to_robot"]
 
-    translation, rotation =  braitenberg_loveBot(sensors)
+    translation, rotation =  braitenberg_loveWall(sensors)
     
     # limite les valeurs de sortie entre -1 et +1
     translation = max(-1,min(translation,1))
