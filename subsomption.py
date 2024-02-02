@@ -70,8 +70,6 @@ def step(robotId, sensors): # <<<<<<<<<------- fonction à modifier pour le TP1
     parametre_sensor = 0.6 # sensibilité des senseurs
     behavior_lib.activate(sensors, parametre_sensor)
     translation, rotation = behavior_lib.get_attributes()
-    if translation is None or rotation is None:
-        translation, rotation = 0, 0
     
     # limite les valeurs de sortie entre -1 et +1
     translation = max(-1,min(translation,1))

@@ -33,15 +33,12 @@ class Avancer(Layer):
                 return True
         return False
     
-
-
-
 class HateWall(Layer):
     def __init__(self):
         super().__init__("HateWall", False)
 
     def activate(self, sensors, parametre_sensor):
-        if sensors["sensor_left"]["distance_to_wall"] < parametre_sensor or sensors["sensor_right"]["distance_to_wall"] < parametre_sensor or sensors["sensor_front"]["distance_to_wall"] < parametre_sensor:
+        if sensors["sensor_front_left"]["distance_to_wall"] < parametre_sensor or sensors["sensor_front_right"]["distance_to_wall"] < parametre_sensor or sensors["sensor_front"]["distance_to_wall"] < parametre_sensor:
             translation, rotation = braitenberg_hateWall(sensors)
             self.set_behavior(translation, rotation)
             return True
