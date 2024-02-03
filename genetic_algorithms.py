@@ -22,10 +22,13 @@ posInit = (400,400)
 param = []
 bestParam = []
 bestDistance = 0
-evaluations = 500
-orientationEval = 3
+evaluations = 500 * 3
+orientationEval = 0
+distanceList = []
+comportementParam = [random.randint(-1, 1) for _ in range(0, 8)]
+
 def step(robotId, sensors, position):
-    global evaluations, param, bestParam, bestDistance, orientationEval
+    global evaluations, param, bestParam, bestDistance, orientationEval, comportementParam, distanceList
     bestIteration = 0 #itération du meilleur sccore
     # cet exemple montre comment générer au hasard, et évaluer, des stratégies comportementales
     # Remarques:
@@ -39,30 +42,39 @@ def step(robotId, sensors, position):
             if rob.iterations > 0:
                 print(rob.iterations)
                 dist = math.sqrt( math.pow( posInit[0] - position[0], 2 ) + math.pow( posInit[1] - position[1], 2 ) )
-                print ("Distance:",dist)
-                if bestDistance < dist:
-                    bestDistance = dist
-                    bestParam = param.copy()
-                    bestIteration = rob.iterations 
-                    print("Meilleur comportement à l'itération ", bestIteration,  ": \tscore: ",  bestDistance,  "\tmeilleur paramètre: ", bestParam)
-                    saveParams(bestDistance, bestParam)
-            evaluations -= 1
-            param = []
-            for i in range(0, 8):
-                param.append(random.randint(-1, 1))
-            rob.controllers[robotId].set_position(posInit[0], posInit[1])
-            rob.controllers[robotId].set_absolute_orientation(90)
+                distanceList.append(dist)
+                
+                if orientationEval % 3 == 0:
+                    score = sum(distanceList)
+                    distanceList.clear()
 
+                    if bestDistance < score:
+                        bestDistance = score
+                        bestParam = comportementParam.copy()
+                        bestIteration = rob.iterations 
+                        saveParams(bestIteration, bestDistance, bestParam)
+
+                    param = [random.randint(-1, 1) for _ in range(0, 8)]
+                    comportementParam = param
+                    
+                else:
+                    orientation = random.randint(0, 360)
+                    rob.controllers[robotId].set_position(posInit[0], posInit[1])
+                    rob.controllers[robotId].set_absolute_orientation(orientation)
+            
+            evaluations -= 1
+            orientationEval += 1
+            param = comportementParam
+    
     else:
         param = bestParam.copy() # Utilisation des meilleurs paramètre
         dist = math.sqrt( math.pow( posInit[0] - position[0], 2 ) + math.pow( posInit[1] - position[1], 2 ) )
-        
         if rob.iterations % 1000 == 0:
             print("Itération ", rob.iterations,  ": \tscore: ",  dist,  "\n")
             #reset
+            #orientation = random.randint(0, 360)
             #rob.controllers[robotId].set_position(posInit[0], posInit[1])
-            #rob.controllers[robotId].set_absolute_orientation(90)
-
+            #rob.controllers[robotId].set_absolute_orientation(orientation)
 
     # fonction de contrôle (qui dépend des entrées sensorielles, et des paramètres)
     translation = math.tanh ( param[0] + param[1] * sensors["sensor_front_left"]["distance"] + param[2] * sensors["sensor_front"]["distance"] + param[3] * sensors["sensor_front_right"]["distance"] );
@@ -70,11 +82,12 @@ def step(robotId, sensors, position):
 
     return translation, rotation
 
-def saveParams(bestDistance, bestParam):
+def saveParams(bestIteration, bestDistance, bestParam):
     with open("best_params.txt", "w") as file:
         file.write("Meilleurs paramètres:\n")
         file.write("Distance: " + str(bestDistance) + "\n")
         file.write("Paramètre: " + str(bestParam) + "\n")
+        file.write("Iteration: " + str(bestIteration) + "\n")
 
 # =-=-=-=-=-=-=-=-=-= NE RIEN MODIFIER *APRES* CETTE LIGNE =-=-=-=-=-=-=-=-=-=
 

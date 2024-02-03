@@ -6,7 +6,7 @@ class Layer:
         self.translation = 0
         self.rotation = 0
 
-    def activate(self, sensors, parametre_sensor):
+    def activate(self, sensors, parametre_sensor, robotId):
         pass
 
     def set_behavior(self, translation, rotation):
@@ -24,7 +24,7 @@ class Avancer(Layer):
     def __init__(self):
         super().__init__("Avancer", False)
 
-    def activate(self, sensors, parametre_sensor):
+    def activate(self, sensors, parametre_sensor, robotId):
         if not (sensors["sensor_left"]["distance_to_wall"] < parametre_sensor or sensors["sensor_right"]["distance_to_wall"] < parametre_sensor or sensors["sensor_front"]["distance_to_wall"] < parametre_sensor):
             if not (sensors["sensor_left"]["distance_to_robot"] < parametre_sensor or sensors["sensor_right"]["distance_to_robot"] < parametre_sensor or sensors["sensor_front"]["distance_to_robot"] < parametre_sensor):
                 translation = sensors["sensor_front"]["distance"]
@@ -32,12 +32,22 @@ class Avancer(Layer):
                 self.set_behavior(translation, rotation)
                 return True
         return False
+class LoveWall(Layer):
+    def __init__(self):
+        super().__init__("HateWall", False)
+
+    def activate(self, sensors, parametre_sensor, robotId):
+        if sensors["sensor_front_left"]["distance_to_wall"] < parametre_sensor or sensors["sensor_front_right"]["distance_to_wall"] < parametre_sensor or sensors["sensor_front"]["distance_to_wall"] < parametre_sensor:
+            translation, rotation = braitenberg_loveWall(sensors)
+            self.set_behavior(translation, rotation)
+            return True
+        return False
     
 class HateWall(Layer):
     def __init__(self):
         super().__init__("HateWall", False)
 
-    def activate(self, sensors, parametre_sensor):
+    def activate(self, sensors, parametre_sensor, robotId):
         if sensors["sensor_front_left"]["distance_to_wall"] < parametre_sensor or sensors["sensor_front_right"]["distance_to_wall"] < parametre_sensor or sensors["sensor_front"]["distance_to_wall"] < parametre_sensor:
             translation, rotation = braitenberg_hateWall(sensors)
             self.set_behavior(translation, rotation)
@@ -48,14 +58,26 @@ class LoveBot(Layer):
     def __init__(self):
         super().__init__("Lovebot", False)
 
-    def activate(self, sensors, parametre_sensor):
-        if sensors["sensor_left"]["distance_to_robot"] < parametre_sensor or sensors["sensor_right"]["distance_to_robot"] < parametre_sensor or sensors["sensor_front"]["distance_to_robot"] < parametre_sensor:
-            translation, rotation = braitenberg_loveBot(sensors)
-            self.set_behavior(translation, rotation)
-            return True
-        return False
+    def activate(self, sensors, parametre_sensor, robotId):
+        if robotId >=  8: # Le comportement lovebot est appliqué ssi c'est un robot adverse
+            if sensors["sensor_left"]["distance_to_robot"] < parametre_sensor or sensors["sensor_right"]["distance_to_robot"] < parametre_sensor or sensors["sensor_front"]["distance_to_robot"] < parametre_sensor:
+                translation, rotation = braitenberg_loveBot(sensors)
+                self.set_behavior(translation, rotation)
+                return True
+            return False
             
+class HateBot(Layer):
+    def __init__(self):
+        super().__init__("Lovebot", False)
 
+    def activate(self, sensors, parametre_sensor, robotId):
+        if robotId <  8: # Le comportement lovebot est appliqué ssi c'est un robot de l'équipe 
+            if sensors["sensor_left"]["distance_to_robot"] < parametre_sensor or sensors["sensor_right"]["distance_to_robot"] < parametre_sensor or sensors["sensor_front"]["distance_to_robot"] < parametre_sensor:
+                translation, rotation = braitenberg_hateBot(sensors)
+                self.set_behavior(translation, rotation)
+                return True
+            return False
+      
 class Subsomption():
     def __init__(self):
         self.layers = []
@@ -64,11 +86,11 @@ class Subsomption():
     def addLayer(self, layer):
         self.layers.append(layer)
 
-    def activate(self, sensors, parametre_sensor):
+    def activate(self, sensors, parametre_sensor, robotId):
         for layer in self.layers:
             self.current_layer = layer
-            layer.activate(sensors, parametre_sensor)
-            if layer.activate(sensors, parametre_sensor):
+            layer.activate(sensors, parametre_sensor, robotId)
+            if layer.activate(sensors, parametre_sensor, robotId):
                 return
     
     def get_attributes(self):

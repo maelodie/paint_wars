@@ -1,0 +1,4 @@
+Meilleurs paramètres:
+Distance: 1335.2521185283063
+Paramètre: [-1, 0, 1, 1, 1, -1, -1, 1]
+Iteration: 356400
