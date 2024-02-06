@@ -44,7 +44,7 @@ def step(robotId, sensors, position):
                     bestDistance = dist
                     bestParam = param.copy()
                     bestIteration = rob.iterations 
-                    print("Meilleur comportement à l'itération ", bestIteration,  ": \tscore: ",  bestDistance,  "\tmeilleur paramètre: ", bestParam)
+                    #print("Meilleur comportement à l'itération ", bestIteration,  ": \tscore: ",  bestDistance,  "\tmeilleur paramètre: ", bestParam)
                     saveParams(bestDistance, bestParam)
             evaluations -= 1
             param = []
