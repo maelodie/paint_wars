@@ -72,8 +72,8 @@ def step(robotId, sensors, position):
         if rob.iterations % 1000 == 0:
             print("Itération ", rob.iterations,  ": \tscore: ",  dist,  "\n")
             #reset
-            #orientation = random.randint(0, 360)
-            #rob.controllers[robotId].set_position(posInit[0], posInit[1])
+            orientation = random.randint(0, 360)
+            rob.controllers[robotId].set_position(posInit[0], posInit[1])
             #rob.controllers[robotId].set_absolute_orientation(orientation)
 
     # fonction de contrôle (qui dépend des entrées sensorielles, et des paramètres)

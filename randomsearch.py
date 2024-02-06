@@ -39,7 +39,7 @@ def step(robotId, sensors, position):
             if rob.iterations > 0:
                 print(rob.iterations)
                 dist = math.sqrt( math.pow( posInit[0] - position[0], 2 ) + math.pow( posInit[1] - position[1], 2 ) )
-                print ("Distance:",dist)
+                print ("Distance:", dist)
                 if bestDistance < dist:
                     bestDistance = dist
                     bestParam = param.copy()

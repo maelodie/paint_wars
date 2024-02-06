@@ -22,61 +22,77 @@ simulation_mode = 2 # Simulation mode: realtime=0, fast=1, super_fast_no_render=
 posInit = (400,400) # position initiale
 
 # Liste contenant les paramètres optimaux
-param = []
+param = [random.randint(-1, 1) for _ in range(0, 8)]
 bestParam = []
-
-# score
-bestDistance = 0
+evaluations = 500 * 3
+orientationEval = 0
+distanceList = []
+comportementParam = [random.randint(-1, 1) for _ in range(0, 8)]
 
 # population
 dicoPopulation = [] # liste contenant les paramètres sur les individus générés
-premier_individu = [random.randint(-1, 1) for _ in range(0, 8)] # ancêtre de la population généré au hasard
-dicoPopulation.append(premier_individu)
-nbGeneration = 500 # nombre d'individus générés 
-individu_actuel = premier_individu.copy()
-meilleurIndividu = premier_individu.copy()
+parent = [random.randint(-1, 1) for _ in range(0, 8)] # ancêtre de la population généré au hasard
+dicoPopulation.append(parent)
+
+nbGeneration = 1000 # nombre d'individus générés 
+enfant = False
+parent = True
 bestDistance = 0
 
 def step(robotId, sensors, position):
-    # Import des variables globales
-    global nbGeneration, individu_actuel, meilleurIndividu, bestDistance,  dicoPopulation
-    
-    if nbGeneration == 500:
-        bestDistance = math.sqrt( math.pow( posInit[0] - position[0], 2 ) + math.pow( posInit[1] - position[1], 2 ) )
+    global evaluations, param, bestParam, bestDistance, orientationEval, comportementParam, distanceList, enfant, parent
+    bestIteration = 0 #itération du meilleur sccore
+    # cet exemple montre comment générer au hasard, et évaluer, des stratégies comportementales
+    # Remarques:
+    # - l'évaluation est ici la distance moyenne parcourue, mais on peut en imaginer d'autres
+    # - la liste "param", définie ci-dessus, permet de stocker les paramètres de la fonction de contrôle
+    # - la fonction de controle est une combinaison linéaire des senseurs, pondérés par les paramètres
 
-    if nbGeneration > 0:
-        if rob.iterations % 400 == 0: # 1 comportement toutes les 400 itérations
-            print(rob.iterations)
-            individu_actuel = meilleurIndividu.copy()
-            individu_actuel[random.randint(0, len(meilleurIndividu)-1)] = random.randint(-1, 1)
-            if individu_actuel not in dicoPopulation:
-                if rob.iterations > 0:
+    # toutes les 400 itérations: le robot est remis au centre de l'arène avec une orientation aléatoire
+    if evaluations > 0:
+        if rob.iterations % 400 == 0:
+            if rob.iterations > 0:
+                
+                dist = math.sqrt( math.pow( posInit[0] - position[0], 2 ) + math.pow( posInit[1] - position[1], 2 ) )
+                distanceList.append(dist)
+                
+                if orientationEval % 3 == 0:
+                    score = sum(distanceList)
+                    distanceList.clear()
+                    print(param, ' | ', score)
+                    if bestDistance < score:
+                        bestDistance = score
+                        bestParam = comportementParam.copy()
+                        bestIteration = rob.iterations 
+                        enfant = True
+                        saveParams(bestIteration, bestDistance, bestParam)
+
+                    if enfant == True:
+                        newParam = param.copy()
+                        newParam[random.randint(0, 7)] = random.randint(-1, 1)
+                        param = newParam
+                        comportementParam = param
                     
-                    dist = math.sqrt( math.pow( posInit[0] - position[0], 2 ) + math.pow( posInit[1] - position[1], 2 ) )
-
-                    if bestDistance < dist:
-                        bestDistance = dist
-                        dicoPopulation.append(meilleurIndividu)
-                        meilleurIndividu = individu_actuel.copy()
-                        print("Meilleur individu: ", meilleurIndividu)
-                        print("hi its me")
-
-                    else:
-                        dicoPopulation.append(individu_actuel)
-            nbGeneration -= 1
+                else:
+                    orientation = random.randint(0, 360)
+                    rob.controllers[robotId].set_position(posInit[0], posInit[1])
+                    rob.controllers[robotId].set_absolute_orientation(orientation)
+            
+            evaluations -= 1
+            orientationEval += 1
+            param = comportementParam
+    
     else:
-        param = meilleurIndividu.copy() # Utilisation des meilleurs paramètre
+        param = bestParam.copy() # Utilisation des meilleurs paramètre
         dist = math.sqrt( math.pow( posInit[0] - position[0], 2 ) + math.pow( posInit[1] - position[1], 2 ) )
-        
         if rob.iterations % 1000 == 0:
             print("Itération ", rob.iterations,  ": \tscore: ",  dist,  "\n")
-
             #reset
-            #rob.controllers[robotId].set_position(posInit[0], posInit[1])
-            #rob.controllers[robotId].set_absolute_orientation(90)
+            orientation = random.randint(0, 360)
+            rob.controllers[robotId].set_position(posInit[0], posInit[1])
+            #rob.controllers[robotId].set_absolute_orientation(orientation)
 
     # fonction de contrôle (qui dépend des entrées sensorielles, et des paramètres)
-    param = meilleurIndividu.copy()
     translation = math.tanh ( param[0] + param[1] * sensors["sensor_front_left"]["distance"] + param[2] * sensors["sensor_front"]["distance"] + param[3] * sensors["sensor_front_right"]["distance"] );
     rotation = math.tanh ( param[4] + param[5] * sensors["sensor_front_left"]["distance"] + param[6] * sensors["sensor_front"]["distance"] + param[7] * sensors["sensor_front_right"]["distance"] );
 
