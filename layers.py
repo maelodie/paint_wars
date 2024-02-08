@@ -106,9 +106,8 @@ class Explore(Layer):
         super().__init__("Avancer")
 
     def activate(self, sensors, parametre_sensor, robotId):  
-        if True:
-            param = [1, 0, 1, 1, -1, -1, 1, 1]
-            translation = math.tanh ( param[0] + param[1] * sensors["sensor_front_left"]["distance"] + param[2] * sensors["sensor_front"]["distance"] + param[3] * sensors["sensor_front_right"]["distance"] );
-            rotation = math.tanh ( param[4] + param[5] * sensors["sensor_front_left"]["distance"] + param[6] * sensors["sensor_front"]["distance"] + param[7] * sensors["sensor_front_right"]["distance"] );
-            self.set_behavior(translation, rotation)
-            return True
+        param = [1, 0, 1, 1, -1, -1, 1, 1]
+        translation = math.tanh ( param[0] + param[1] * sensors["sensor_front_left"]["distance"] + param[2] * sensors["sensor_front"]["distance"] + param[3] * sensors["sensor_front_right"]["distance"] );
+        rotation = math.tanh ( param[4] + param[5] * sensors["sensor_front_left"]["distance"] + param[6] * sensors["sensor_front"]["distance"] + param[7] * sensors["sensor_front_right"]["distance"] );
+        self.set_behavior(translation, rotation)
+        return True
