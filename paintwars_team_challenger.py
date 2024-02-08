@@ -62,19 +62,19 @@ def step(robotId, sensors):
     translation = 1 # vitesse de translation (entre -1 et +1)
     rotation = 0 # vitesse de rotation (entre -1 et +1)
 
-    if robotId == 0 or robotId == 4 :
+    if robotId%8 == 0 or robotId%8 == 4 :
         library1.activate(sensors, 1, robotId)
         translation, rotation = library1.get_attributes()
 
-    if robotId == 1 or robotId == 5 :
+    if robotId%8 == 1 or robotId%8 == 5 :
         library1.activate(sensors, 1, robotId)
         translation, rotation = library1.get_attributes()
 
-    if robotId == 2 or robotId == 6 :
+    if robotId%8 == 2 or robotId%8 == 6 :
         library1.activate(sensors, 1, robotId)
         translation, rotation = library1.get_attributes()
 
-    if robotId == 3 or robotId == 7 :
+    if robotId%8 == 3 or robotId%8 == 7 :
         library1.activate(sensors, 1, robotId)
         translation, rotation = library1.get_attributes()
 
