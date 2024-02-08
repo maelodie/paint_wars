@@ -9,8 +9,7 @@ from pyroborobo import Pyroborobo, Controller, AgentObserver, WorldObserver, Cir
 import numpy as np
 import random
 import math
-from get_arena_genetics import *
-import paintwars_arena
+from paintwars_arena import *
 
 rob = 0
 arena_index = 3
