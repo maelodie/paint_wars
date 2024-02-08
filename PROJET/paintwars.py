@@ -57,7 +57,7 @@ class MyController(Controller):
         if sensors["sensor_front_left"]["isRobot"]:
             sensors["sensor_front_left"]["isSameTeam"] = self.get_robot_controller_at(1).team_name == self.team_name
         if sensors["sensor_front"]["isRobot"]:
-            sensors["sensor_front"]["isSameTeam"] = self.get_robot_controller_at(2).team_name == self.team_name
+            sensors["sensor_front"]["isSameisSameTeamTeam"] = self.get_robot_controller_at(2).team_name == self.team_name
         if sensors["sensor_front_right"]["isRobot"]:
             sensors["sensor_front_right"]["isSameTeam"] = self.get_robot_controller_at(3).team_name == self.team_name
         if sensors["sensor_right"]["isRobot"]:

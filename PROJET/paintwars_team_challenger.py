@@ -3,7 +3,7 @@
 # Binome:
 #  Prénom Nom: Jules MAZLUM         | 28605659
 #  Prénom Nom: Maeva RAMAHATAFANDRY | 21104443
-
+import math
 from braitenberg import *
 from layers import * 
 from paintwars_config import *
@@ -26,17 +26,12 @@ def get_extended_sensors(sensors):
 avancer = Avancer() # Comportement avancer tout droit
 loveWall = LoveWall()
 hateWall = HateWall()
-seekEnemy = LoveBot()
-avoidAlly = HateBot()
-followAlly = LoveBot()
-# librarie 1
-behavior_lib = Subsomption() # Bibliothèque de comportements
-behavior_lib.addLayer(seekEnemy)
-behavior_lib.addLayer(hateWall)
-behavior_lib.addLayer(avancer)
 
-# librarie 2
-behavior_lib2 = Subsomption() # Bibliothèque de comportements
+avoidAlly = AvoidAlly()
+seekAlly = SeekAlly()
+
+avoidEnemy = AvoidEnemy()
+seekEnemy = SeekEnemy()
 
 
 def step(robotId, sensors):
@@ -44,18 +39,25 @@ def step(robotId, sensors):
     sensors = get_extended_sensors(sensors)
     translation = 1 # vitesse de translation (entre -1 et +1)
     rotation = 0 # vitesse de rotation (entre -1 et +1)
-    if robotId == 1:
-        rotation = 0.5
-    # limite les valeurs de sortie entre -1 et +1
+    param =  [1, 0, 1, 1, -1, -1, 1, 1]
+    translation = math.tanh ( param[0] + param[1] * sensors["sensor_front_left"]["distance"] + param[2] * sensors["sensor_front"]["distance"] + param[3] * sensors["sensor_front_right"]["distance"] );
+    rotation = math.tanh ( param[4] + param[5] * sensors["sensor_front_left"]["distance"] + param[6] * sensors["sensor_front"]["distance"] + param[7] * sensors["sensor_front_right"]["distance"] );
+
+    translation, rotation = braitenberg_avoider(sensors)
     translation = max(-1,min(translation,1))
     rotation = max(-1, min(rotation, 1))
 
     return translation, rotation
 
-def subsomption_avancer_hatewall_lovebot(sensors, robotId):
-   # Retrieve translation and rotation values
-    parametre_sensor = 0.9 # sensibilité des senseurs
-    behavior_lib.activate(sensors, parametre_sensor, robotId)
-    translation, rotation = behavior_lib.get_attributes()
+"""def strategie_map0(robotId, sensors):
+    if robotId%8 == 3 or robotId%8 == 4:
 
-    return translation, rotation
+
+        translation, rotation = 
+
+    return translation, rotation"""
+librarie1 = Subsomption()
+librarie1.addLayer(avoidAlly)
+librarie1.addLayer(avancer)
+
+librarie1.activate(sensors)
