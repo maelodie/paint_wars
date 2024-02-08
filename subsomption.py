@@ -13,9 +13,8 @@ import paintwars_arena
 
 # =-=-=-=-=-=-=-=-=-= NE RIEN MODIFIER *AVANT* CETTE LIGNE =-=-=-=-=-=-=-=-=-=
 
-from TP1.braitenberg import *
-from TP1.layers import *
-
+from braitenberg import *
+from layers import *
 def get_extended_sensors(sensors):
     for key in sensors:
         sensors[key]["distance_to_robot"] = 1.0
@@ -71,8 +70,6 @@ def step(robotId, sensors): # <<<<<<<<<------- fonction à modifier pour le TP1
     parametre_sensor = 0.6 # sensibilité des senseurs
     behavior_lib.activate(sensors, parametre_sensor)
     translation, rotation = behavior_lib.get_attributes()
-    if translation is None or rotation is None:
-        translation, rotation = 0, 0
     
     # limite les valeurs de sortie entre -1 et +1
     translation = max(-1,min(translation,1))
