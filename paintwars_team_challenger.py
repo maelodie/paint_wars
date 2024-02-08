@@ -25,21 +25,58 @@ def get_extended_sensors(sensors):
 loveEnemy = LoveEnemy()
 hateAlly = HateAlly()
 hateWall = HateWall()
-explorer = Explore()
 
-library = Subsomption()
-library.addLayer(hateAlly)
-library.addLayer(loveEnemy)
-library.addLayer(hateWall)
-library.addLayer(explorer)
+explorer1 = Explore1()
+explorer2 = Explore2()
+explorer3 = Explore3()
+explorer4 = Explore4()
+
+library1 = Subsomption()
+library1.addLayer(hateAlly)
+library1.addLayer(loveEnemy)
+library1.addLayer(hateWall)
+library1.addLayer(explorer1)
+
+library2 = Subsomption()
+library2.addLayer(hateAlly)
+library2.addLayer(loveEnemy)
+library2.addLayer(hateWall)
+library2.addLayer(explorer2)
+
+library3 = Subsomption()
+library3.addLayer(hateAlly)
+library3.addLayer(loveEnemy)
+library3.addLayer(hateWall)
+library3.addLayer(explorer3)
+
+library4 = Subsomption()
+library4.addLayer(hateAlly)
+library4.addLayer(loveEnemy)
+library4.addLayer(hateWall)
+library4.addLayer(explorer4)
 
 def step(robotId, sensors):
     global arenaIndexSelector
     #initialisation des variables
     sensors = get_extended_sensors(sensors)
-    
-    library.activate(sensors, 1, robotId)
-    translation, rotation = library.get_attributes()
+    translation = 1 # vitesse de translation (entre -1 et +1)
+    rotation = 0 # vitesse de rotation (entre -1 et +1)
+
+    if robotId == 0 or robotId == 4 :
+        library1.activate(sensors, 1, robotId)
+        translation, rotation = library1.get_attributes()
+
+    if robotId == 1 or robotId == 5 :
+        library1.activate(sensors, 1, robotId)
+        translation, rotation = library1.get_attributes()
+
+    if robotId == 2 or robotId == 6 :
+        library1.activate(sensors, 1, robotId)
+        translation, rotation = library1.get_attributes()
+
+    if robotId == 3 or robotId == 7 :
+        library1.activate(sensors, 1, robotId)
+        translation, rotation = library1.get_attributes()
 
     # limite les valeurs de sortie entre -1 et +1
     translation = max(-1,min(translation,1))

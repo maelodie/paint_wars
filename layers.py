@@ -101,13 +101,46 @@ class HateWall(Layer):
             return True
         return False
     
-class Explore(Layer):
+class Explore1(Layer):
     def __init__(self):
-        super().__init__("Avancer")
+        super().__init__("Avancer", False)
 
     def activate(self, sensors, parametre_sensor, robotId):  
-        param = [1, 0, 1, 1, -1, -1, 1, 1]
-        translation = math.tanh ( param[0] + param[1] * sensors["sensor_front_left"]["distance"] + param[2] * sensors["sensor_front"]["distance"] + param[3] * sensors["sensor_front_right"]["distance"] );
-        rotation = math.tanh ( param[4] + param[5] * sensors["sensor_front_left"]["distance"] + param[6] * sensors["sensor_front"]["distance"] + param[7] * sensors["sensor_front_right"]["distance"] );
-        self.set_behavior(translation, rotation)
-        return True
+            param = [1, 0, 1, 1, -1, -1, 1, 1]
+            translation = math.tanh ( param[0] + param[1] * sensors["sensor_front_left"]["distance"] + param[2] * sensors["sensor_front"]["distance"] + param[3] * sensors["sensor_front_right"]["distance"] );
+            rotation = math.tanh ( param[4] + param[5] * sensors["sensor_front_left"]["distance"] + param[6] * sensors["sensor_front"]["distance"] + param[7] * sensors["sensor_front_right"]["distance"] );
+            self.set_behavior(translation, rotation)
+            return True
+    
+class Explore2(Layer):
+    def __init__(self):
+        super().__init__("Avancer", False)
+
+    def activate(self, sensors, parametre_sensor, robotId):  
+            param = [1, 1, 1, 1, -1, 0, 0, 1]
+            translation = math.tanh ( param[0] + param[1] * sensors["sensor_front_left"]["distance"] + param[2] * sensors["sensor_front"]["distance"] + param[3] * sensors["sensor_front_right"]["distance"] );
+            rotation = math.tanh ( param[4] + param[5] * sensors["sensor_front_left"]["distance"] + param[6] * sensors["sensor_front"]["distance"] + param[7] * sensors["sensor_front_right"]["distance"] );
+            self.set_behavior(translation, rotation)
+            return True
+    
+class Explore3(Layer):
+    def __init__(self):
+        super().__init__("Avancer", False)
+
+    def activate(self, sensors, parametre_sensor, robotId):  
+            param =  [1, 1, 1, 1, -1, 0, 1, 0]
+            translation = math.tanh ( param[0] + param[1] * sensors["sensor_front_left"]["distance"] + param[2] * sensors["sensor_front"]["distance"] + param[3] * sensors["sensor_front_right"]["distance"] );
+            rotation = math.tanh ( param[4] + param[5] * sensors["sensor_front_left"]["distance"] + param[6] * sensors["sensor_front"]["distance"] + param[7] * sensors["sensor_front_right"]["distance"] );
+            self.set_behavior(translation, rotation)
+            return True
+    
+class Explore4(Layer):
+    def __init__(self):
+        super().__init__("Avancer", False)
+
+    def activate(self, sensors, parametre_sensor, robotId):  
+            param =  [1, 1, 1, 1, -1, 0, 1, 0]
+            translation = math.tanh ( param[0] + param[1] * sensors["sensor_front_left"]["distance"] + param[2] * sensors["sensor_front"]["distance"] + param[3] * sensors["sensor_front_right"]["distance"] );
+            rotation = math.tanh ( param[4] + param[5] * sensors["sensor_front_left"]["distance"] + param[6] * sensors["sensor_front"]["distance"] + param[7] * sensors["sensor_front_right"]["distance"] );
+            self.set_behavior(translation, rotation)
+            return True
