@@ -9,63 +9,131 @@ from pyroborobo import Pyroborobo, Controller, AgentObserver, WorldObserver, Cir
 import numpy as np
 import random
 import math
-
+from get_arena_genetics import *
 import paintwars_arena
 
 rob = 0
+arena_index = 0
 
 # =-=-=-=-=-=-=-=-=-= NE RIEN MODIFIER *AVANT* CETTE LIGNE =-=-=-=-=-=-=-=-=-=
 
 simulation_mode = 2 # Simulation mode: realtime=0, fast=1, super_fast_no_render=2 -- pendant la simulation, la touche "d" permet de passer d'un mode à l'autre.
 
-posInit = (400,400) # position initiale du robot (centre de la carte)
+posInit = (70,400) # position initiale du robot (centre de la carte)
 
 # ___________ Variables pour stocker les paramètres_____________#
-param = [random.randint(-1, 1) for _ in range(0, 8)] # premier paramètre généré aléatoirement 
+param = [1,0,1,-1,-1,-1,1,1] # premier paramètre généré aléatoirement 
 bestParam = [] # variable contenant le meilleur paramètre parmi ceux qui vont être générés
-bestDistance = 0 # distance la plus grande entre le centre de la carte et une distance quelconque (score)
 
 # ________________ Paramètres d'évaluation ______________________#
-evaluations = 500 * 3 # nombre d'évaluations : 500 évaluations pour connaître la carte et 3 évaluations par comportement pour l'orientation 
+evaluations = 400 * 3 * 2# nombre d'évaluations : 500 évaluations pour connaître la carte et 3 évaluations par comportement pour l'orientation 
 orientationEval = 0 # compteur permettant de vérifier toutes les 3 itérations le score obtenu par un comportement dans différentes orientations 
-distanceList = [] # liste permettant de faire la somme des distances obtenues pour calculer le score des comportements après 3 itérations 
+posEvaluation = 0
+positions = [(64, 232), (64,288), (64, 344), (64, 400), (64, 456), (64, 512), (64, 568), (64, 624),
+             (736, 232), (736,288), (736, 344), (736, 400), (736, 456), (736, 512), (736, 568), (736, 624)]
+final_vitesse_list = []
+final_couverture_list = []
+final_distance_list = []
 
-#_____________ Paramètres pour l'algorithme génétique ___--______#
+#_____________ Paramètres pour l'algorithme génétique ___________#
+mu = 5
+lamda = 20
+parents = []
+population = dict()
 parent = []
 parent = param.copy() # contient les paramètres du comportement du parent (parent du comportement)
 scoreParent = 0 # contient le score du parent après expérimentation des 3 évaluations (avec oritentation)
 eval1 = True # permet de savoir si c'est la première évaluation. Si c'est le cas, on n'effectue pas encore la comparaison enfant vs parent (l'enfant n'a pas encore été testé)
 
+#____________ Calcul du score pour la distance ___________________#
+distanceList = [] # liste permettant de faire la somme des distances obtenues pour calculer le score des comportements après 3 itérations 
+bestScoreDistance = 0 # distance la plus grande entre le centre de la carte et une distance quelconque (score)
+
+
+#______ Calcul du score pour la couverture de l'environnement______#
+bestScoreCouverture = 0
+scoreCouverture = 0
+score_couverture_list = []
+score_passage = 0
+areneCopy = get_arena(arena_index).copy()
+areneCopy2 = get_arena(arena_index).copy()
+
+#____________ Calcul du score pour la vitesse et la rotation _____ #
+score_vitesse_iteration = []
+score_list = []
+bestScoreVitesse = 0
+
 def step(robotId, sensors, position):
-    global evaluations, param, bestParam, bestDistance, orientationEval, distanceList, parent, scoreParent, eval1
+    global evaluations, param, bestParam
+    global orientationEval, posEvaluation, final_vitesse_list, final_couverture_list, final_distance_list, positions
+    global distanceList, bestScoreDistance
+    global parent, scoreParent, eval1
+    global score_vitesse_iteration, bestScoreVitesse, score_list
+    global bestScoreCouverture, scoreCouverture, arenaCopy, areneCopy2, score_couverture_list, score_passage
     bestIteration = 0 
 
     # toutes les 400 itérations: le robot est remis au centre de l'arène avec une orientation aléatoire
     if evaluations > 0: # on effectue des evaluations fixes puis une exploitation du meilleur paramètre après épuisement du nombre d'évaluations
         if rob.iterations % 400 == 0:    # toutes les 400 itérations: le robot est remis au centre de l'arène avec une orientation aléatoire
             if rob.iterations > 0:
+                # On compare la distance la plus longue
+                scoreDistance = math.sqrt( math.pow( posInit[0] - position[0], 2 ) + math.pow( posInit[1] - position[1], 2 ) ) # distance parcourue entre le milieu et un point quelconque avec les paramètres comportementparam précédents
+                distanceList.append(scoreDistance) # on ajoute la distance effectuée à pendant 3 itération à une liste dont on va calculer la distance totale
 
-                dist = math.sqrt( math.pow( posInit[0] - position[0], 2 ) + math.pow( posInit[1] - position[1], 2 ) ) # distance parcourue entre le milieu et un point quelconque avec les paramètres comportementparam précédents
-                distanceList.append(dist) # on ajoute la distance effectuée à pendant 3 itération à une liste dont on va calculer la distance totale
+                # On compare la vitesse de translation et la vitesse de rotation sur les itérations
+                scoreVitesse = score_vitesse(score_vitesse_iteration)
+                score_vitesse_iteration.clear()
+                score_list.append(scoreVitesse) 
                 
-                if orientationEval % 3 == 0 and orientationEval != 0: # `orientationEval` permet d'évaluer un comportement 3 fois avec différentes orientations (ou positions) et on ne compte pas la première itération parce que la liste de distances est encore vide
-                    score = sum(distanceList) # on fait d'abord la somme des distances parcourues avec les 3 évaluations
-                    distanceList.clear() # on efface le contenu de la liste pour le prochain comportement
-                    
-                    if bestDistance < score: # si le score actuel est meilleur que le score enregistré comme le meilleur
-                        bestDistance = score # le meilleur score est remplacé par le score actuel
-                        bestParam = param.copy() # le meilleur paramètre est celui du comportement actuel
-                        bestIteration = rob.iterations # on stocke l'itération pendant laquelle le meilleur paramètre a été trouvé
-                        saveParams(bestIteration, bestDistance, bestParam) # on enregistre la meilleure itération, la meilleure distance et le meilleur paramètre dans un fichier
-                    
-                    print(
-                        'iteration:\t', rob.iterations,
-                        'parent:\t', parent,
-                        'enfant:\t', param,
-                        'score:\t', score
-                    )
-                    
+                # On compare le score de couverture sur l'environnement:
+                scoreCouverture = score_couverture(areneCopy, position, robotId)
+                score_couverture_list.append(scoreCouverture)
 
+                if orientationEval % 3 == 0 and orientationEval != 0:
+                    finalScoreVitesse = sum(score_list) # on fait d'abord la somme des distances parcourues avec les 3 évaluations
+                    final_vitesse_list.append(finalScoreVitesse)
+                    score_list.clear() # on efface le contenu de la liste pour le prochain comportement
+                    
+                    finalScoreCouverture = sum(score_couverture_list)
+                    final_couverture_list.append(finalScoreCouverture)
+                    score_couverture_list.clear()
+
+                    finalScoreDistance = sum(distanceList)
+                    final_distance_list.append(finalScoreDistance)
+                    distanceList.clear()
+
+                else: # ici, on tombe dans le cas d'évaluation d'orientation du comportement (on ne change pas le paramètre mais on change l'orientation que l'on évalue avec le même paramètre)
+                    orientation = random.randint(0, 360) # l'orientation est un entier aléatoire comprise entre 0 et 360
+                    rob.controllers[robotId].set_absolute_orientation(orientation) # on l'oriente au nombre tiré aléatoirement  
+
+                
+                if posEvaluation % 2 == 0 and posEvaluation != 0:
+                    finalPosDistance = sum(final_distance_list)
+                    final_distance_list.clear()
+
+                    finalPosVitesse = sum(final_vitesse_list) 
+                    final_vitesse_list.clear()
+
+                    finalPosCouverture = sum(final_couverture_list)
+                    final_couverture_list.clear()
+
+                    if bestScoreVitesse > finalPosVitesse and bestScoreCouverture < finalPosCouverture and bestScoreDistance < finalPosDistance:
+                        bestScoreVitesse = finalPosVitesse
+                        bestScoreCouverture = finalPosCouverture
+                        bestScoreDistance = finalPosDistance
+
+                        bestParam = param.copy()
+
+                        bestIteration = rob.iterations 
+                        saveParams(bestIteration, bestScoreVitesse, bestParam) 
+                        print(
+                                'iteration:', rob.iterations,
+                                '\tenfant: ', param,
+                                '\tscore Vitesse: ', finalPosVitesse,
+                                '\tscore Couverture: ', finalPosCouverture,
+                                '\score Distance: ', finalPosDistance
+                            )
+                    score = finalPosDistance + finalPosVitesse + finalPosCouverture
                     if eval1: # si c'est la première initialisation, on initialise le score du parent à celui qu'on a obtenu
                         scoreParent = score # le score du parent est le premier score
                         eval1 = False # on met l'évaluation à False car ce n'est plus la première itération
@@ -77,15 +145,16 @@ def step(robotId, sensors, position):
                     # Dans tous les cas, on génère les enfants tq:
                     param = parent.copy() # l'enfant est une copie du parent avec un mutation
                     param[random.randint(0, len(param) - 1)] = random.randint(-1, 1) # on initialise la valeur de l'enfant à celle du parent avec une mutation parmi ses éléments 
-                            
-                else: # ici, on tombe dans le cas d'évaluation d'orientation du comportement (on ne change pas le paramètre mais on change l'orientation que l'on évalue avec le même paramètre)
-                    orientation = random.randint(0, 360) # l'orientation est un entier aléatoire comprise entre 0 et 360
-                    rob.controllers[robotId].set_position(posInit[0], posInit[1]) # on place le robot à son point d'initiation
-                    rob.controllers[robotId].set_absolute_orientation(orientation) # on l'oriente au nombre tiré aléatoirement
-            
+                
+                else:      
+                    pos = random.choice(positions)
+                    x, y = pos[0], pos[1]
+                    rob.controllers[robotId].set_position(x, y) # on place le robot à son point d'initiation   
+
             # incrémentation / désincrémentation des paramètres
             evaluations -= 1
             orientationEval += 1
+            posEvaluation += 1
     
     # ici, on tombe dans le cas d'exploitation des paramètres trouvées. Toutes les 1000 itérations, on affiche l'état de l'expérience et optionnellement remettre le robot au centre de la carte 
     else:
@@ -102,7 +171,43 @@ def step(robotId, sensors, position):
     translation = math.tanh ( param[0] + param[1] * sensors["sensor_front_left"]["distance"] + param[2] * sensors["sensor_front"]["distance"] + param[3] * sensors["sensor_front_right"]["distance"] );
     rotation = math.tanh ( param[4] + param[5] * sensors["sensor_front_left"]["distance"] + param[6] * sensors["sensor_front"]["distance"] + param[7] * sensors["sensor_front_right"]["distance"] );
 
+    score_vitesse_append(translation, rotation, score_vitesse_iteration)
+    env_passage(areneCopy, position, robotId)
+    
+
     return translation, rotation
+
+def score_vitesse_append(translation, rotation, score_vitesse_iteration):
+    score_vitesse_iteration.append(translation * (1 - abs(rotation)))
+
+def score_vitesse(score_vitesse_iteration):
+    return sum(score_vitesse_iteration)
+
+def env_passage(arene, position, robotId):
+    x = int(position[0] // len(arene))
+    y = int(position[1] // len(arene[0]))
+    
+    if x >= len(arene) :
+        x = len(arene) - 1
+    if y >= len(arene[0]):
+        y = len(arene[0]) - 1
+
+    arene[x][y] = -1 * robotId
+    
+def score_couverture(arene, position, robotId):
+    score = 0
+    width_arene = len(arene)
+    height_arene = len(arene[0])
+
+    for k in range(width_arene * height_arene):
+        i = k // width_arene
+        j = k % width_arene
+
+        if arene[i][j] <= 0:
+            score += 1
+
+    return score
+
 
 def saveParams(bestIteration, bestDistance, bestParam):
     with open("best_params.txt", "w") as file:
@@ -115,35 +220,7 @@ def saveParams(bestIteration, bestDistance, bestParam):
 
 number_of_robots = 1  # 8 robots identiques placés dans l'arène
 
-arena = [
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-            [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-            [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-            [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-            [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-            [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-            [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-            [1, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 1],
-            [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1],
-            [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1],
-            [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1],
-            [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-            [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-            [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-            [1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-            [1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-            [1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-            [1, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 1],
-            [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-            [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-            [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-            [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-            [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-            [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-            [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-        ]
+arena = get_arena(arena_index)
 
 offset_x = 36
 offset_y = 36
