@@ -67,16 +67,16 @@ def step(robotId, sensors):
         translation, rotation = library1.get_attributes()
 
     if robotId%8 == 1 or robotId%8 == 5 :
-        library1.activate(sensors, 1, robotId)
-        translation, rotation = library1.get_attributes()
+        library2.activate(sensors, 1, robotId)
+        translation, rotation = library2.get_attributes()
 
     if robotId%8 == 2 or robotId%8 == 6 :
-        library1.activate(sensors, 1, robotId)
-        translation, rotation = library1.get_attributes()
+        library3.activate(sensors, 1, robotId)
+        translation, rotation = library3.get_attributes()
 
     if robotId%8 == 3 or robotId%8 == 7 :
-        library1.activate(sensors, 1, robotId)
-        translation, rotation = library1.get_attributes()
+        library4.activate(sensors, 1, robotId)
+        translation, rotation = library4.get_attributes()
 
     # limite les valeurs de sortie entre -1 et +1
     translation = max(-1,min(translation,1))
