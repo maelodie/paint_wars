@@ -33,7 +33,6 @@ class Subsomption():
             self.current_layer = layer
             layer.activate(sensors, parametre_sensor, robotId)
             if layer.activate(sensors, parametre_sensor, robotId):
-                print(self.get_current_layer())
                 return
     
     def get_attributes(self):
@@ -58,7 +57,6 @@ class LoveEnemy(Layer):
         (sensors["sensor_back_left"]["isRobot"]and not sensors["sensor_back_left"]["isSameTeam"]) or
         (sensors["sensor_left"]["isRobot"]and not sensors["sensor_left"]["isSameTeam"] ) or
         (sensors["sensor_front_left"]["isRobot"] and not sensors["sensor_front_left"]["isSameTeam"])):
-            print(sensors["sensor_front"]["isSameTeam"])
             translation, rotation = braitenberg_loveBot(sensors)
             self.set_behavior(translation, rotation)
             return True
@@ -103,7 +101,7 @@ class HateWall(Layer):
     
 class Explore1(Layer):
     def __init__(self):
-        super().__init__("Avancer", False)
+        super().__init__("Avancer")
 
     def activate(self, sensors, parametre_sensor, robotId):  
             param = [1, 0, 1, 1, -1, -1, 1, 1]
@@ -114,7 +112,7 @@ class Explore1(Layer):
     
 class Explore2(Layer):
     def __init__(self):
-        super().__init__("Avancer", False)
+        super().__init__("Avancer")
 
     def activate(self, sensors, parametre_sensor, robotId):  
             param = [1, 1, 1, 1, -1, 0, 0, 1]
@@ -125,7 +123,7 @@ class Explore2(Layer):
     
 class Explore3(Layer):
     def __init__(self):
-        super().__init__("Avancer", False)
+        super().__init__("Avancer")
 
     def activate(self, sensors, parametre_sensor, robotId):  
             param =  [1, 1, 1, 1, -1, 0, 1, 0]
@@ -136,7 +134,7 @@ class Explore3(Layer):
     
 class Explore4(Layer):
     def __init__(self):
-        super().__init__("Avancer", False)
+        super().__init__("Avancer")
 
     def activate(self, sensors, parametre_sensor, robotId):  
             param =  [1, 1, 1, 1, -1, 0, 1, 0]
