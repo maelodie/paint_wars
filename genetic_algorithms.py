@@ -26,7 +26,7 @@ bestParam = [] # variable contenant le meilleur paramètre parmi ceux qui vont �
 bestDistance = 0 # distance la plus grande entre le centre de la carte et une distance quelconque (score)
 
 # ________________ Paramètres d'évaluation ______________________#
-evaluations = 500 * 3 # nombre d'évaluations : 500 évaluations pour connaître la carte et 3 évaluations par comportement pour l'orientation 
+evaluations = 0 # nombre d'évaluations : 500 évaluations pour connaître la carte et 3 évaluations par comportement pour l'orientation 
 orientationEval = 0 # compteur permettant de vérifier toutes les 3 itérations le score obtenu par un comportement dans différentes orientations 
 distanceList = [] # liste permettant de faire la somme des distances obtenues pour calculer le score des comportements après 3 itérations 
 
@@ -41,7 +41,7 @@ def step(robotId, sensors, position):
     bestIteration = 0 
 
     # toutes les 400 itérations: le robot est remis au centre de l'arène avec une orientation aléatoire
-    if evaluations > 0: # on effectue des evaluations fixes puis une exploitation du meilleur paramètre après épuisement du nombre d'évaluations
+    if evaluations < 500 * 3: # on effectue des evaluations fixes puis une exploitation du meilleur paramètre après épuisement du nombre d'évaluations
         if rob.iterations % 400 == 0:    # toutes les 400 itérations: le robot est remis au centre de l'arène avec une orientation aléatoire
             if rob.iterations > 0:
 
@@ -64,6 +64,8 @@ def step(robotId, sensors, position):
                         'enfant:\t', param,
                         'score:\t', score
                     )
+
+                    plot(evaluations//3, score, bestDistance, 2)
                     
 
                     if eval1: # si c'est la première initialisation, on initialise le score du parent à celui qu'on a obtenu
@@ -84,7 +86,7 @@ def step(robotId, sensors, position):
                     rob.controllers[robotId].set_absolute_orientation(orientation) # on l'oriente au nombre tiré aléatoirement
             
             # incrémentation / désincrémentation des paramètres
-            evaluations -= 1
+            evaluations += 1
             orientationEval += 1
     
     # ici, on tombe dans le cas d'exploitation des paramètres trouvées. Toutes les 1000 itérations, on affiche l'état de l'expérience et optionnellement remettre le robot au centre de la carte 
@@ -110,6 +112,16 @@ def saveParams(bestIteration, bestDistance, bestParam):
         file.write("Distance: " + str(bestDistance) + "\n")
         file.write("Paramètre: " + str(bestParam) + "\n")
         file.write("Iteration: " + str(bestIteration) + "\n")
+
+# pour utiliser : "python plot.py graph1.csv 0 1"
+def plot(generation, score, bestscore, i):
+    name = "graph"+str(i)+".csv"
+
+    with open(name, "a") as file:
+        file.write(str(generation) + ",")
+        file.write(str(score) + ",")
+        file.write(str(bestscore))
+        file.write("\n")
 
 # =-=-=-=-=-=-=-=-=-= NE RIEN MODIFIER *APRES* CETTE LIGNE =-=-=-=-=-=-=-=-=-=
 
