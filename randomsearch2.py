@@ -9,10 +9,10 @@ from pyroborobo import Pyroborobo, Controller, AgentObserver, WorldObserver, Cir
 import numpy as np
 import random
 import math
-
 import paintwars_arena
 
 rob = 0
+
 
 # =-=-=-=-=-=-=-=-=-= NE RIEN MODIFIER *AVANT* CETTE LIGNE =-=-=-=-=-=-=-=-=-=
 

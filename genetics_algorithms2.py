@@ -12,7 +12,7 @@ import math
 from paintwars_arena import *
 
 rob = 0
-arena_index = 3
+arena_index = 4
 
 # =-=-=-=-=-=-=-=-=-= NE RIEN MODIFIER *AVANT* CETTE LIGNE =-=-=-=-=-=-=-=-=-=
 
@@ -21,7 +21,7 @@ simulation_mode = 2 # Simulation mode: realtime=0, fast=1, super_fast_no_render=
 posInit = (70,400) # position initiale du robot (centre de la carte)
 
 # ___________ Variables pour stocker les paramètres_____________#
-param = [1,0,1,-1,-1,-1,1,1] # premier paramètre généré aléatoirement 
+param = [1, 0, 0, 1, 1, -1, -1, 1] # premier paramètre généré aléatoirement 
 bestParam = [] # variable contenant le meilleur paramètre parmi ceux qui vont être générés
 
 # ________________ Paramètres d'évaluation ______________________#
@@ -201,13 +201,11 @@ def generate_child(parents, population, k, mu, lamda):
     return parents, population
 
 def saveParams(bestIteration, bestDistance, bestParam):
-    with open("best_params.txt", "w") as file:
+    with open("best_params3.txt", "w") as file:
         file.write("Meilleurs paramètres:\n")
         file.write("Distance: " + str(bestDistance) + "\n")
         file.write("Paramètre: " + str(bestParam) + "\n")
         file.write("Iteration: " + str(bestIteration) + "\n")
-
-# =-=-=-=-=-=-=-=-=-= NE RIEN MODIFIER *APRES* CETTE LIGNE =-=-=-=-=-=-=-=-=-=
 
 number_of_robots = 1  # 8 robots identiques placés dans l'arène
 
