@@ -2,15 +2,15 @@
 # 2021-03-31
 
 # Arena
-import paintwars_arena
-get_arena = paintwars_arena.get_arena
+import paintwars_arena_Gr4
+get_arena = paintwars_arena_Gr4.get_arena
 arenaIndexSelector = 4# numéro de l'arène, entre 0 et 4
 
 # Starting position
 invertStartingPosition = False # True: red commence à gauche. Sinon, commence à droite.
 
 # Red team
-import paintwars_team_challenger # importer votre code
+import paint_wars.paintwars_team_challenger as paintwars_team_challenger # importer votre code
 get_name_red_team = paintwars_team_challenger.get_team_name # mettre ici votre fonction get_team_name
 step_red_team = paintwars_team_challenger.step # mettre ici votre fonction step
 

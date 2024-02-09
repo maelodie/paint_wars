@@ -1,0 +1,21 @@
+##
+## TOURNOI ##
+##
+
+Pendant les 4h du TME, les équipes doivent s'affronter.
+
+Pour cela: 
+- chaque équipe s'organise pour trouver une équipe à affronter
+- les deux équipes échangent leur code (via mail ou autre) sous la forme d'un seul fichier paintwars_nomdevotreequipe.py
+- chaque équipe intègre le code de l'autre équipe en modifiant paintwars_config 
+	l'adversaire sera l'équipe bleue
+	vous êtes l'équipe rouge, vous commencez toujours à gauche (vos adversaires feront la même chose en symmétrique)
+- chaque équipe teste les 6 arènes de base (no. 0 à 5) et les 5 arènes d'évaluation (6 à 10), en utilisant le script go_tournament_eval
+	- score: 
+		pour chaque arene: +1 si vous gagnez, +0.5 si égalité
+		le score max est donc de 10 (vaincre sur chaque arène)
+
+Remarques: vous et vos adversaires faites la même procédure. La seule différence est la position de départ de votre équipe. Il est donc possible d'obtenir des scores (un peu) différents --  ce n'est pas un problème.
+
+
+Bon courage!
